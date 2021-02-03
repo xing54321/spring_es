@@ -1,0 +1,127 @@
+# 插入
+{
+  "busiFeatureID": "66",
+  "beginDate": "2021-02-03T22:50:00.000Z",
+  "endDate": "2021-02-03T22:53:00.000Z",
+  "rests": [
+    {
+      "logType": "End EXT",
+      "restUrl": "/exturl/1"
+    },
+    {
+      "logType": "End REST",
+      "restUrl": "/resturl/1"
+    },
+    {
+      "logType": "End REST",
+      "restUrl": "/resturl/2"
+    }
+  ]
+}
+# 查询1
+{
+  "size": 10,
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "wildcard": {
+            "rests.logType.keyword": {
+              "value": "*EXT*"
+            }
+          }
+        }
+      ],
+      "filter": {
+        "range": {
+          "beginDate": {
+            "format": "8uuuu-MM-dd HH:mm:ss.SSS",
+            "gte": "2021-02-03 00:00:00.000",
+            "lte": "2021-02-03 23:59:59.999"
+          }
+        }
+      }
+    }
+  },
+  "aggs": {
+    "my_agg": {
+      "terms": {
+        "field": "rests.restUrl.keyword"
+      }
+    }
+  }
+}
+# 查询2
+{
+  "size": 0,
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "wildcard": {
+            "rests.logType.keyword": {
+              "value": "*EXT*"
+            }
+          }
+        }
+      ],
+      "filter": {
+        "range": {
+          "beginDate": {
+            "format": "8uuuu-MM-dd HH:mm:ss.SSS",
+            "gte": "2021-02-03 00:00:00.000",
+            "lte": "2021-02-03 23:59:59.999"
+          }
+        }
+      }
+    }
+  },
+  "aggs": {
+    "my_agg": {
+      "terms": {
+        "script": "doc['busiFeatureID.keyword'].values +'#split#'+ doc['rests.restUrl.keyword'].values"
+      }
+    }
+  }
+}
+
+// 聚合再聚合，实现含数组属性的多字段分组
+{
+  "size": 0,
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "wildcard": {
+            "rests.logType.keyword": {
+              "value": "*EXT*"
+            }
+          }
+        }
+      ],
+      "filter": {
+        "range": {
+          "beginDate": {
+            "format": "8uuuu-MM-dd HH:mm:ss.SSS",
+            "gte": "2021-02-03 00:00:00.000",
+            "lte": "2021-02-03 23:59:59.999"
+          }
+        }
+      }
+    }
+  },
+  "aggs": {
+    "my_agg1": {
+      "terms": {
+        "field": "rests.restUrl.keyword"
+      },
+      "aggs": {
+        "my_agg2": {
+          "terms": {
+            "field": "busiFeatureID.keyword"
+          }
+        }
+      }
+    }
+  }
+}
